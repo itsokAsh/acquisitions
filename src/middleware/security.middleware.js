@@ -1,4 +1,4 @@
-import aj from "../config/ARCJET.js";
+import aj from "../config/arcjet.js";
 import logger from "../config/logger.js";
 import {slidingWindow} from "@arcjet/node";
 
