@@ -8,6 +8,13 @@
       "when": 1781098028786,
       "tag": "0000_freezing_kate_bishop",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1781152002627,
+      "tag": "0001_odd_bloodscream",
+      "breakpoints": true
     }
   ]
 }
