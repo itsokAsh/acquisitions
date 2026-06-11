@@ -12,7 +12,8 @@ const xml = fs.readFileSync(xmlPath, 'utf8');
 // Use regex to parse project level metrics
 // In clover.xml, the project level metrics line looks like:
 // <metrics statements="842" coveredstatements="334" conditionals="36" coveredconditionals="24" methods="26" coveredmethods="3" ... />
-const metricsRegex = /<project[^>]*>\s*<metrics\s+statements="(\d+)"\s+coveredstatements="(\d+)"\s+conditionals="(\d+)"\s+coveredconditionals="(\d+)"\s+methods="(\d+)"\s+coveredmethods="(\d+)"/;
+const metricsRegex =
+  /<project[^>]*>\s*<metrics\s+statements="(\d+)"\s+coveredstatements="(\d+)"\s+conditionals="(\d+)"\s+coveredconditionals="(\d+)"\s+methods="(\d+)"\s+coveredmethods="(\d+)"/;
 const match = xml.match(metricsRegex);
 
 if (!match) {
@@ -20,11 +21,25 @@ if (!match) {
   process.exit(1);
 }
 
-const [_, statements, coveredStatements, conditionals, coveredConditionals, methods, coveredMethods] = match.map(Number);
+const [
+  ,
+  statements,
+  coveredStatements,
+  conditionals,
+  coveredConditionals,
+  methods,
+  coveredMethods,
+] = match.map(Number);
 
-const stmtPct = statements ? ((coveredStatements / statements) * 100).toFixed(2) : '0.00';
-const condPct = conditionals ? ((coveredConditionals / conditionals) * 100).toFixed(2) : '0.00';
-const methodPct = methods ? ((coveredMethods / methods) * 100).toFixed(2) : '0.00';
+const stmtPct = statements
+  ? ((coveredStatements / statements) * 100).toFixed(2)
+  : '0.00';
+const condPct = conditionals
+  ? ((coveredConditionals / conditionals) * 100).toFixed(2)
+  : '0.00';
+const methodPct = methods
+  ? ((coveredMethods / methods) * 100).toFixed(2)
+  : '0.00';
 
 const summaryMarkdown = `
 ### 📊 Code Coverage Summary
