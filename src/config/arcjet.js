@@ -22,15 +22,11 @@ const aj = arcjet({
         "CATEGORY:PREVIEW", 
       ],
     }),
-    // Create a token bucket rate limit. Other algorithms are supported.
+    
     slidingWindow({
       mode: "LIVE",
-      // Tracked by IP address by default, but this can be customized
-      // See https://docs.arcjet.com/fingerprints
-      //characteristics: ["ip.src"],
-       // Refill 5 tokens per interval
-      interval: '2s', // Refill every 10 seconds
-      max: 5 // Bucket capacity of 10 tokens
+      interval: '2s', 
+      max: 5 
     }),
   ],
 });
