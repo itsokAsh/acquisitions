@@ -25,3 +25,27 @@ Thumbs.db
 
 # Testing
 coverage/
+.neon_local/
+.env.development
+.env.production
+
+# Application logs
+logs/
+*.log
+
+# Build directories
+dist/
+build/
+
+# Turbo
+.turbo/
+
+# Package managers
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Database
+*.sqlite
+*.db
+
