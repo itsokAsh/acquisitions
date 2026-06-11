@@ -14,6 +14,9 @@ jobs:
   docker:
     name: Docker Build & Push
     runs-on: ubuntu-latest
+    env:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
     steps:
       - name: Checkout repository
@@ -26,17 +29,17 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub
-        if: ${{ secrets.DOCKER_USERNAME != '' && secrets.DOCKER_PASSWORD != '' }}
+        if: ${{ env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_PASSWORD }}
 
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.DOCKER_USERNAME || 'local' }}/acquisitions
+          images: ${{ env.DOCKER_USERNAME || 'local' }}/acquisitions
           tags: |
             type=ref,event=branch
             type=sha,format=long
@@ -51,7 +54,7 @@ jobs:
           file: ./Dockerfile
           target: production
           platforms: linux/amd64,linux/arm64
-          push: ${{ secrets.DOCKER_USERNAME != '' && secrets.DOCKER_PASSWORD != '' }}
+          push: ${{ env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
@@ -60,9 +63,9 @@ jobs:
       - name: Generate summary
         if: always() && steps.build.outcome == 'success'
         run: |
-          if [ "${{ secrets.DOCKER_USERNAME }}" != "" ]; then
+          if [ "${{ env.DOCKER_USERNAME }}" != "" ]; then
             echo "### 🚀 Docker Image Published" >> $GITHUB_STEP_SUMMARY
-            echo "**Image:** \`${{ secrets.DOCKER_USERNAME }}/acquisitions\`" >> $GITHUB_STEP_SUMMARY
+            echo "**Image:** \`${{ env.DOCKER_USERNAME }}/acquisitions\`" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "**Published Tags:**" >> $GITHUB_STEP_SUMMARY
             echo "${{ steps.meta.outputs.tags }}" | while read -r tag; do
