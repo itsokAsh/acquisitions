@@ -49,12 +49,10 @@ const securityMiddleware = async (req, res, next) => {
         path: req.path,
         method: req.method,
       });
-      return res
-        .status(403)
-        .json({
-          error: 'Forbidden',
-          message: 'Your request was blocked by our security system',
-        });
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: 'Your request was blocked by our security system',
+      });
     }
     if (decision.isDenied() && decision.reason.isRateLimit()) {
       logger.warn('Rate limit exceeded', {
@@ -70,12 +68,10 @@ const securityMiddleware = async (req, res, next) => {
     next();
   } catch (e) {
     console.log('Arcjet middleware error:', e);
-    res
-      .status(500)
-      .json({
-        error: 'Internal Server Error',
-        message: 'Something went wrong with the security middleware',
-      });
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Something went wrong with the security middleware',
+    });
   }
 };
 

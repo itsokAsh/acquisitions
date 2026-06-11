@@ -10,6 +10,10 @@ on:
       - main
       - staging
 
+# Opt into Node.js 24 runner execution environment to silence deprecation warnings
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 jobs:
   lint-and-format:
     name: Lint & Format Checks
@@ -22,7 +26,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20 # Your app can safely keep using Node 20 here!
           cache: 'npm'
 
       - name: Install dependencies

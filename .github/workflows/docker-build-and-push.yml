@@ -6,6 +6,10 @@ on:
       - main
   workflow_dispatch:
 
+# Opt into Node.js 24 runner execution environment to silence deprecation warnings
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 jobs:
   docker:
     name: Docker Build & Push
@@ -22,6 +26,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub
+        if: ${{ secrets.DOCKER_USERNAME != '' && secrets.DOCKER_PASSWORD != '' }}
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -31,7 +36,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.DOCKER_USERNAME }}/acquisitions
+          images: ${{ secrets.DOCKER_USERNAME || 'local' }}/acquisitions
           tags: |
             type=ref,event=branch
             type=sha,format=long
@@ -46,7 +51,7 @@ jobs:
           file: ./Dockerfile
           target: production
           platforms: linux/amd64,linux/arm64
-          push: true
+          push: ${{ secrets.DOCKER_USERNAME != '' && secrets.DOCKER_PASSWORD != '' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
@@ -55,12 +60,17 @@ jobs:
       - name: Generate summary
         if: always() && steps.build.outcome == 'success'
         run: |
-          echo "### 🚀 Docker Image Published" >> $GITHUB_STEP_SUMMARY
-          echo "**Image:** \`${{ secrets.DOCKER_USERNAME }}/acquisitions\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Published Tags:**" >> $GITHUB_STEP_SUMMARY
-          echo "${{ steps.meta.outputs.tags }}" | while read -r tag; do
-            if [ ! -z "$tag" ]; then
-              echo "- \`$tag\`" >> $GITHUB_STEP_SUMMARY
-            fi
-          done
+          if [ "${{ secrets.DOCKER_USERNAME }}" != "" ]; then
+            echo "### 🚀 Docker Image Published" >> $GITHUB_STEP_SUMMARY
+            echo "**Image:** \`${{ secrets.DOCKER_USERNAME }}/acquisitions\`" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Published Tags:**" >> $GITHUB_STEP_SUMMARY
+            echo "${{ steps.meta.outputs.tags }}" | while read -r tag; do
+              if [ ! -z "$tag" ]; then
+                echo "- \`$tag\`" >> $GITHUB_STEP_SUMMARY
+              fi
+            done
+          else
+            echo "### 🛠️ Docker Image Built" >> $GITHUB_STEP_SUMMARY
+            echo "The Docker image was successfully built but not pushed because Docker Hub credentials were not configured." >> $GITHUB_STEP_SUMMARY
+          fi
