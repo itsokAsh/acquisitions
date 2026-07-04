@@ -2,10 +2,26 @@ import logger from '#config/logger.js';
 import { db } from '#config/database.js';
 import { users } from '#models/user.model.js';
 import { eq } from 'drizzle-orm';
+import {
+  getCache,
+  setCache,
+  deleteCache,
+  deleteCachePattern,
+  cacheKeys,
+  DEFAULT_TTL,
+} from './cache.service.js';
 
 export const getAllUsers = async () => {
   try {
-    return await db
+    // Try cache first
+    const cached = await getCache(cacheKeys.allUsers());
+    if (cached) {
+      logger.info('Returning users from cache');
+      return cached;
+    }
+
+    // Cache miss - fetch from database
+    const allUsers = await db
       .select({
         id: users.id,
         email: users.email,
@@ -15,6 +31,12 @@ export const getAllUsers = async () => {
         updated_at: users.updated_at,
       })
       .from(users);
+
+    // Store in cache
+    await setCache(cacheKeys.allUsers(), allUsers, DEFAULT_TTL.USER);
+    logger.info('Users fetched from database and cached');
+
+    return allUsers;
   } catch (e) {
     logger.error('Error getting users', e);
     throw e;
@@ -23,6 +45,15 @@ export const getAllUsers = async () => {
 
 export const getUserById = async id => {
   try {
+    // Try cache first
+    const cacheKey = cacheKeys.user(id);
+    const cached = await getCache(cacheKey);
+    if (cached) {
+      logger.info(`Returning user ${id} from cache`);
+      return cached;
+    }
+
+    // Cache miss - fetch from database
     const [user] = await db
       .select({
         id: users.id,
@@ -39,6 +70,10 @@ export const getUserById = async id => {
     if (!user) {
       throw new Error('User not found');
     }
+
+    // Store in cache
+    await setCache(cacheKey, user, DEFAULT_TTL.USER);
+    logger.info(`User ${id} fetched from database and cached`);
 
     return user;
   } catch (e) {
@@ -83,7 +118,11 @@ export const updateUser = async (id, updates) => {
         updated_at: users.updated_at,
       });
 
-    logger.info(`User ${updatedUser.email} updated successfully`);
+    // Invalidate caches
+    await deleteCache(cacheKeys.user(id));
+    await deleteCache(cacheKeys.allUsers());
+    logger.info(`User ${updatedUser.email} updated and cache invalidated`);
+
     return updatedUser;
   } catch (e) {
     logger.error(`Error updating user ${id}:`, e);
@@ -106,7 +145,11 @@ export const deleteUser = async id => {
         role: users.role,
       });
 
-    logger.info(`User ${deletedUser.email} deleted successfully`);
+    // Invalidate caches
+    await deleteCache(cacheKeys.user(id));
+    await deleteCache(cacheKeys.allUsers());
+    logger.info(`User ${deletedUser.email} deleted and cache invalidated`);
+
     return deletedUser;
   } catch (e) {
     logger.error(`Error deleting user ${id}:`, e);

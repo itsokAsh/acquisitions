@@ -34,6 +34,23 @@ app.get('/health', (req, res) => {
     uptime: process.uptime(),
   });
 });
+
+app.get('/health/cache', async (req, res) => {
+  try {
+    const { getCacheStats } = await import('#services/cache.service.js');
+    const stats = await getCacheStats();
+    res.status(200).json({
+      status: 'OK',
+      cache: stats,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Cache health check failed',
+    });
+  }
+});
+
 app.get('/api', (req, res) => {
   res.status(200).json({ message: 'Acquisitions API is running!' });
 });

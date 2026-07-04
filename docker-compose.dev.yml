@@ -1,6 +1,23 @@
 version: '3.8'
 
 services:
+  # Redis cache service
+  redis:
+    image: redis:7-alpine
+    container_name: acquisitions-redis
+    ports:
+      - '6379:6379'
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - acquisitions-dev
+
   # Neon Local proxy for development
   neon-local:
     image: neondatabase/neon_local:latest
@@ -42,6 +59,8 @@ services:
     depends_on:
       neon-local:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - acquisitions-dev
     restart: unless-stopped
@@ -49,3 +68,7 @@ services:
 networks:
   acquisitions-dev:
     driver: bridge
+
+volumes:
+  redis-data:
+    driver: local
