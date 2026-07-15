@@ -18,24 +18,23 @@ services:
     networks:
       - acquisitions-dev
 
-  # Neon Local proxy for development
-  neon-local:
-    image: neondatabase/neon_local:latest
-    container_name: acquisitions-neon-local
+  # Standard Postgres for local development
+  db:
+    image: postgres:15-alpine
+    container_name: acquisitions-db-local
     ports:
-      - '5432:5432'
-    env_file:
-      - .env.development
+      - '5433:5432'
+    environment:
+      POSTGRES_USER: neon
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
     volumes:
-      # Persist branch metadata per git branch (optional)
-      - ./.neon_local/:/tmp/.neon_local
-      - ./.git/HEAD:/tmp/.git/HEAD:ro,consistent
+      - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD', 'pg_isready', '-h', 'localhost', '-p', '5432', '-U', 'neon']
+      test: ['CMD-SHELL', 'pg_isready -U neon -d postgres']
       interval: 5s
       timeout: 3s
       retries: 5
-      start_period: 10s
     networks:
       - acquisitions-dev
 
@@ -50,6 +49,10 @@ services:
       - '${PORT:-3000}:3000'
     env_file:
       - .env.development
+    environment:
+      # Override URLs for Docker internal networking
+      DATABASE_URL: postgresql://neon:password@db:5432/postgres
+      REDIS_URL: redis://redis:6379
     volumes:
       # Mount source code for development hot-reload
       - .:/app
@@ -57,7 +60,7 @@ services:
       # Mount logs directory
       - ./logs:/app/logs
     depends_on:
-      neon-local:
+      db:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -71,4 +74,6 @@ networks:
 
 volumes:
   redis-data:
+    driver: local
+  postgres-data:
     driver: local

@@ -4,8 +4,11 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from '#config/swagger.js';
 import authRoutes from '#routes/auth.routes.js';
 import usersRoutes from '#routes/users.routes.js';
+import workspaceRoutes from '#routes/workspace.routes.js';
 import { securityMiddleware } from '#middleware/security.middleware.js';
 const app = express();
 
@@ -55,10 +58,26 @@ app.get('/api', (req, res) => {
   res.status(200).json({ message: 'Acquisitions API is running!' });
 });
 
+// API Documentation
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/workspaces', workspaceRoutes);
+
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  logger.error(err.stack || err.message);
+  res.status(500).json({
+    error: 'Internal Server Error',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
+  });
 });
 
 export default app;

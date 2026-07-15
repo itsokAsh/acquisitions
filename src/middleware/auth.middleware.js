@@ -3,7 +3,7 @@ import { jwttoken } from '#utils/jwt.js';
 
 export const authenticateToken = (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    const token = req.cookies.access_token;
 
     if (!token) {
       return res.status(401).json({

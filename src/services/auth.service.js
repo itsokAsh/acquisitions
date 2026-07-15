@@ -11,7 +11,7 @@ export const hashPassword = async password => {
     throw new Error('Error hashing', { cause: error });
   }
 };
-export const createUser = async ({ name, email, password, role = 'user' }) => {
+export const createUser = async ({ name, email, password }) => {
   try {
     const existingUser = await db
       .select()
@@ -28,13 +28,11 @@ export const createUser = async ({ name, email, password, role = 'user' }) => {
         name,
         email,
         password: password_hash,
-        role,
       })
       .returning({
         id: users.id,
         name: users.name,
         email: users.email,
-        role: users.role,
         created_at: users.created_at,
       });
     logger.info(`User ${newUser.email} created successfully`);
@@ -65,7 +63,6 @@ export const loginUser = async (email, password) => {
       id: user.id,
       name: user.name,
       email: user.email,
-      role: user.role,
     };
   } catch (error) {
     logger.error('Error during user login:', error);

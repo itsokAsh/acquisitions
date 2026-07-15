@@ -1,4 +1,5 @@
-import 'dotenv/config';
+import { config } from 'dotenv';
+config({ path: process.env.NODE_ENV === 'development' ? '.env.development' : '.env', override: true });
 
 export default {
   schema: './src/models/*.js',

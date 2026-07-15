@@ -12,7 +12,8 @@
     "#routes/*": "./src/routes/*",
     "#services/*": "./src/services/*",
     "#utils/*": "./src/utils/*",
-    "#validation/*": "./src/validation/*"
+    "#validation/*": "./src/validation/*",
+    "#shared/*": "./src/shared/*"
   },
   "scripts": {
     "dev": "node --watch src/index.js",
@@ -43,7 +44,6 @@
   "dependencies": {
     "@arcjet/inspect": "^1.5.0",
     "@arcjet/node": "^1.5.0",
-    "@neondatabase/serverless": "^1.1.0",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
@@ -53,7 +53,10 @@
     "helmet": "^8.2.0",
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.11.0",
+    "pg": "^8.22.0",
     "redis": "^6.1.0",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1",
     "winston": "^3.19.0",
     "zod": "^4.4.3"
   },

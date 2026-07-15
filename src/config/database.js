@@ -1,15 +1,18 @@
 import 'dotenv/config';
-import { neon, neonConfig } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import pg from 'pg';
+import logger from './logger.js';
 
-import { drizzle } from 'drizzle-orm/neon-http';
+const { Pool } = pg;
 
-if (process.env.NODE_ENV === 'development') {
-  neonConfig.fetchEndpoint = 'http://neon-local:5432/sql';
-  neonConfig.useSecureWebsocket = false;
-  neonConfig.poolQueryViaFetch = true;
-}
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
 
-const sql = neon(process.env.DATABASE_URL);
-const db = drizzle(sql);
+pool.on('error', err => {
+  logger.error('Unexpected PostgreSQL pool error:', err);
+});
 
-export { db, sql };
+const db = drizzle(pool);
+
+export { db, pool };
