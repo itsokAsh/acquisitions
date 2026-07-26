@@ -6,7 +6,7 @@ This project is built using Node.js, Express, PostgreSQL, and Redis. It is desig
 
 ---
 
-## 📖 Core Concepts (For Beginners)
+## 📖 Core Concepts
 
 If you are new to backend development, you will hear a lot of jargon. Let's break down exactly what this API does in simple terms.
 
